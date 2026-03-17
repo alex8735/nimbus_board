@@ -1,0 +1,1562 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CG Calculator · D-KBJL · Nimbus 4DM</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --surface: #181818;
+    --surface2: #222222;
+    --border: #2a2a2a;
+    --border2: #333;
+    --text: #e8e8e8;
+    --muted: #666;
+    --accent: #c8f04a;
+    --accent-dim: rgba(200,240,74,0.12);
+    --danger: #ff5f5f;
+    --danger-dim: rgba(255,95,95,0.12);
+    --warn: #ffb347;
+    --warn-dim: rgba(255,179,71,0.12);
+    --mono: 'DM Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem 4rem;
+  }
+
+  .container { width: 100%; max-width: 520px; }
+
+  /* Header */
+  header { margin-bottom: 2rem; }
+  .reg {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 300;
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+  h1 span { font-weight: 500; }
+  .subtitle {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+    font-family: var(--mono);
+  }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .card-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+
+  /* Input rows */
+  .input-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .input-row:last-child { border-bottom: none; }
+
+  .input-label {
+    font-size: 14px;
+    color: var(--text);
+    font-weight: 300;
+  }
+  .input-hint {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 1px;
+    font-family: var(--mono);
+  }
+
+  .input-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  input[type="number"] {
+    width: 76px;
+    height: 36px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 14px;
+    text-align: right;
+    padding: 0 10px;
+    outline: none;
+    transition: border-color 0.15s;
+    -moz-appearance: textfield;
+  }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+  input[type="number"]:focus { border-color: var(--accent); }
+
+  .unit {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    min-width: 20px;
+  }
+
+  /* Fixed values */
+  .fixed-value {
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--muted);
+    padding-right: 4px;
+  }
+
+  /* Result card */
+  .result-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .result-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .metric {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 0.875rem 1rem;
+  }
+  .metric-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .metric-value {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+  .metric-unit {
+    font-size: 11px;
+    color: var(--muted);
+    margin-left: 3px;
+  }
+
+  /* Envelope bar */
+  .envelope-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .envelope-limit {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .bar-wrap {
+    position: relative;
+    height: 28px;
+    background: var(--surface2);
+    border-radius: 6px;
+    border: 1px solid var(--border2);
+    overflow: visible;
+    margin-bottom: 20px;
+  }
+
+  .bar-fill {
+    position: absolute;
+    top: 0; bottom: 0;
+    background: rgba(200,240,74,0.15);
+    border-right: 2px solid var(--accent);
+    border-left: 2px solid var(--danger);
+    transition: left 0.3s ease, width 0.3s ease;
+  }
+
+  .bar-marker {
+    position: absolute;
+    top: 4px; bottom: 4px;
+    width: 3px;
+    border-radius: 2px;
+    background: var(--accent);
+    transform: translateX(-50%);
+    transition: left 0.3s ease, background 0.3s;
+  }
+
+  .bar-marker.out { background: var(--danger); }
+
+  .bar-optimal {
+    position: absolute;
+    top: 0; bottom: 0;
+    background: rgba(74, 222, 128, 0.18);
+    border-left: 1px dashed rgba(74,222,128,0.5);
+    border-right: 1px dashed rgba(74,222,128,0.5);
+    pointer-events: none;
+  }
+
+  .bar-target {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 2px;
+    background: rgba(74, 222, 128, 0.7);
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+
+  .bar-target::after {
+    content: '75%';
+    position: absolute;
+    bottom: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: rgba(74,222,128,0.7);
+    white-space: nowrap;
+  }
+
+  .bar-limit-line {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 1px;
+  }
+  .bar-limit-fwd { background: var(--danger); opacity: 0.5; }
+  .bar-limit-aft { background: var(--danger); opacity: 0.5; right: 0; }
+
+  /* Status */
+  .status-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+  }
+
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 5px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: background 0.3s, color 0.3s;
+  }
+  .status-ok {
+    background: var(--accent-dim);
+    color: var(--accent);
+    border: 1px solid rgba(200,240,74,0.3);
+  }
+  .status-warn {
+    background: var(--warn-dim);
+    color: var(--warn);
+    border: 1px solid rgba(255,179,71,0.3);
+  }
+  .status-danger {
+    background: var(--danger-dim);
+    color: var(--danger);
+    border: 1px solid rgba(255,95,95,0.3);
+  }
+  .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  .cg-pos {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* Moments detail */
+  .detail-toggle {
+    width: 100%;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    padding: 10px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: border-color 0.2s, color 0.2s;
+    margin-bottom: 0.75rem;
+  }
+  .detail-toggle:hover { border-color: var(--border2); color: var(--text); }
+
+  .detail-table { display: none; }
+  .detail-table.open { display: block; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+  th {
+    color: var(--muted);
+    font-weight: 400;
+    text-align: right;
+    padding: 4px 6px;
+    border-bottom: 1px solid var(--border);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  th:first-child { text-align: left; }
+  td {
+    padding: 5px 6px;
+    text-align: right;
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+  td:first-child { text-align: left; color: var(--muted); }
+  tr:last-child td { border-bottom: none; font-weight: 500; color: var(--text); }
+
+  footer {
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 2rem;
+    letter-spacing: 0.08em;
+  }
+
+  @media (max-width: 400px) {
+    .result-grid { grid-template-columns: 1fr; }
+    input[type="number"] { width: 68px; }
+  }
+
+  /* Tabs */
+  .tab-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 4px;
+  }
+  .tab-btn {
+    background: none;
+    border: none;
+    border-radius: 7px;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 9px 0;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .tab-btn.active {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border2);
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* Checklist */
+  .check-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: opacity 0.2s;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-item.done { opacity: 0.45; }
+  .check-box {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    border: 1.5px solid var(--border2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .check-item.done .check-box {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .check-tick { display: none; width: 12px; height: 12px; }
+  .check-item.done .check-tick { display: block; }
+  .check-text { flex: 1; }
+  .check-main {
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--text);
+    line-height: 1.3;
+  }
+  .check-item.done .check-main { text-decoration: line-through; color: var(--muted); }
+  .check-keyword { font-weight: 500; color: var(--accent); }
+  .check-item.done .check-keyword { color: var(--muted); }
+  .checklist-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 1rem;
+  }
+  .check-progress { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .check-progress span { color: var(--accent); font-weight: 500; }
+  .reset-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .reset-btn:hover { border-color: var(--border2); color: var(--text); }
+  .all-clear {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent-dim);
+    border: 1px solid rgba(200,240,74,0.3);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-top: 1rem;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  /* Toggle switch */
+  .toggle-track {
+    width: 44px; height: 26px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 13px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+    flex-shrink: 0;
+  }
+  .toggle-track.on {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .toggle-thumb {
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 18px; height: 18px;
+    background: var(--muted);
+    border-radius: 50%;
+    transition: transform 0.2s, background 0.2s;
+  }
+  .toggle-track.on .toggle-thumb {
+    transform: translateX(18px);
+    background: #0f0f0f;
+  }
+
+  /* Takeoff note */
+  .to-note {
+    display: flex;
+    gap: 8px;
+    background: var(--warn-dim);
+    border: 1px solid rgba(255,179,71,0.25);
+    border-radius: 7px;
+    padding: 9px 12px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--warn);
+    line-height: 1.5;
+    margin-top: 0.5rem;
+  }
+  /* Surface selector */
+  .surface-selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 5px;
+  }
+  .surface-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 7px;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    padding: 8px 4px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    text-align: center;
+    line-height: 1.4;
+  }
+  .surface-btn.active {
+    background: var(--accent-dim);
+    border-color: rgba(200,240,74,0.4);
+    color: var(--accent);
+  }
+  .surface-btn.active.warn {
+    background: var(--warn-dim);
+    border-color: rgba(255,179,71,0.4);
+    color: var(--warn);
+  }
+  /* Flights tab */
+  .flight-row {
+    display: flex;
+    flex-direction: column;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: opacity 0.15s;
+    gap: 6px;
+  }
+  .flight-row:last-child { border-bottom: none; }
+  .flight-row:active { opacity: 0.6; }
+
+  .flight-row-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .flight-date {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+  .flight-airport {
+    font-size: 14px;
+    color: var(--text);
+    font-weight: 400;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .flight-dist {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .flight-row-times {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: var(--surface2);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-family: var(--mono);
+  }
+  .flight-time-block { flex: 1; }
+  .flight-time-label {
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .flight-time-value {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: 0.02em;
+  }
+  .flight-time-sep {
+    font-size: 18px;
+    color: var(--border2);
+    padding: 0 8px;
+    flex-shrink: 0;
+  }
+  .flight-dur-block {
+    text-align: right;
+    flex-shrink: 0;
+    padding-left: 8px;
+    border-left: 1px solid var(--border);
+  }
+  .flight-dur-value {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--accent);
+  }
+
+  .flight-row-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .flight-pilot {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .flight-arrow {
+    font-size: 12px;
+    color: var(--muted);
+    flex-shrink: 0;
+    margin-left: 8px;
+  }
+
+  .flights-loading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 1.5rem 0;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .flights-spinner {
+    width: 16px; height: 16px;
+    border: 2px solid var(--border2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .flights-error {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--danger);
+    padding: 1rem 0;
+    line-height: 1.6;
+  }
+  .flights-empty {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    padding: 1.5rem 0;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="reg">D-KBJL</div>
+    <h1>Nimbus 4DM · <span>D-KBJL</span></h1>
+    <div class="subtitle">Vorflugkontrolle</div>
+  </header>
+
+  <!-- Tab bar -->
+  <div class="tab-bar" style="grid-template-columns:1fr 1fr 1fr 1fr;">
+    <button class="tab-btn active" onclick="switchTab('cg')">SP-Rechner</button>
+    <button class="tab-btn" onclick="switchTab('checklist')">Checkliste</button>
+    <button class="tab-btn" onclick="switchTab('takeoff')">Startleistung</button>
+    <button class="tab-btn" onclick="switchTab('flights')">Flüge</button>
+  </div>
+
+  <!-- CG Tab -->
+  <div class="tab-panel active" id="tab-cg">
+
+  <!-- Crew -->
+  <div class="card">
+    <div class="card-label">Besatzung</div>
+    <div class="input-row">
+      <div>
+        <div class="input-label">Pilot (vorne)</div>
+        <div class="input-hint">ohne Fallschirm</div>
+      </div>
+      <div class="input-right">
+        <input type="number" id="pilot" value="70" min="0" max="130" step="0.5">
+        <span class="unit">kg</span>
+      </div>
+    </div>
+    <div class="input-row">
+      <div>
+        <div class="input-label">Kopilot (hinten)</div>
+        <div class="input-hint">ohne Fallschirm</div>
+      </div>
+      <div class="input-right">
+        <input type="number" id="copilot" value="76" min="0" max="130" step="0.5">
+        <span class="unit">kg</span>
+      </div>
+    </div>
+    <div class="input-row">
+      <div>
+        <div class="input-label">Fallschirm vorne</div>
+      </div>
+      <div class="input-right">
+        <input type="number" id="chute_front" value="6.5" min="0" max="15" step="0.5">
+        <span class="unit">kg</span>
+      </div>
+    </div>
+    <div class="input-row">
+      <div>
+        <div class="input-label">Fallschirm hinten</div>
+      </div>
+      <div class="input-right">
+        <input type="number" id="chute_rear" value="6.5" min="0" max="15" step="0.5">
+        <span class="unit">kg</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ballast -->
+  <div class="card">
+    <div class="card-label">Ballast &amp; Kraftstoff</div>
+    <div class="input-row">
+      <div>
+        <div class="input-label">Trimmgewichte (Nase)</div>
+        <div class="input-hint">3.9 kg pro Stück</div>
+      </div>
+      <div class="input-right">
+        <input type="number" id="trim_weights" value="0" min="0" max="10" step="1">
+        <span class="unit">Stk</span>
+      </div>
+    </div>
+    <div class="input-row">
+      <div>
+        <div class="input-label">Heckwasser</div>
+      </div>
+      <div class="input-right">
+        <input type="number" id="tail_water" value="0" min="0" max="30" step="1">
+        <span class="unit">l</span>
+      </div>
+    </div>
+    <div class="input-row">
+      <div>
+        <div class="input-label">Kraftstoff</div>
+      </div>
+      <div class="input-right">
+        <input type="number" id="fuel" value="12" min="0" max="60" step="1">
+        <span class="unit">l</span>
+      </div>
+    </div>
+    <div class="input-row">
+      <div>
+        <div class="input-label">Wasserballast Flügel</div>
+      </div>
+      <div class="input-right">
+        <input type="number" id="wing_water" value="0" min="0" max="200" step="5">
+        <span class="unit">l</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div class="result-card" id="result-card">
+    <div class="card-label">Ergebnis</div>
+
+    <div class="result-grid">
+      <div class="metric">
+        <div class="metric-label">Abfluggewicht</div>
+        <div><span class="metric-value" id="out-weight">785</span><span class="metric-unit">kg</span></div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Flächenbelastung</div>
+        <div><span class="metric-value" id="out-wingload">43.7</span><span class="metric-unit">kg/m²</span></div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">SP-Lage [mm]</div>
+        <div><span class="metric-value" id="out-cg-mm">214</span><span class="metric-unit">mm</span></div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">SP-Lage [%MAC]</div>
+        <div><span class="metric-value" id="out-cg-pct">75.5</span><span class="metric-unit">%</span></div>
+      </div>
+    </div>
+
+    <div class="envelope-header">
+      <span class="envelope-limit">▼ vorne 105 mm</span>
+      <span class="envelope-limit">hinten 250 mm ▼</span>
+    </div>
+    <div class="bar-wrap">
+      <div class="bar-fill" id="bar-fill"></div>
+      <div class="bar-optimal" id="bar-optimal"></div>
+      <div class="bar-target" id="bar-target"></div>
+      <div class="bar-limit-line bar-limit-fwd"></div>
+      <div class="bar-limit-line bar-limit-aft" style="right:0;left:auto;"></div>
+      <div class="bar-marker" id="bar-marker"></div>
+    </div>
+
+    <div class="status-row">
+      <div class="status-pill status-ok" id="status-pill">
+        <div class="dot"></div>
+        <span id="status-text">Im Bereich</span>
+      </div>
+      <div class="cg-pos" id="cg-pos-label">214.5 mm</div>
+    </div>
+  </div>
+
+  <!-- Detail toggle -->
+  <button class="detail-toggle" onclick="toggleDetail()">▸ Momentenaufstellung anzeigen</button>
+  <div class="detail-table card" id="detail-table">
+    <table>
+      <thead>
+        <tr>
+          <th>Position</th>
+          <th>Masse [kg]</th>
+          <th>Arm [mm]</th>
+          <th>Moment [kg·mm]</th>
+        </tr>
+      </thead>
+      <tbody id="moment-body"></tbody>
+    </table>
+  </div>
+
+  <footer>Nimbus 4DM · MTOW 820 kg · Fläche 17.96 m² · Version 2024</footer>
+
+  </div><!-- /tab-cg -->
+
+  <!-- Checklist Tab -->
+  <div class="tab-panel" id="tab-checklist">
+    <div class="card">
+      <div class="card-label">Vor dem Start — D-KBJL</div>
+
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"><svg class="check-tick" viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 4.5,9 10.5,3" stroke="#0f0f0f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="check-text"><div class="check-main">Hauptbolzen <span class="check-keyword">GESICHERT</span></div></div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"><svg class="check-tick" viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 4.5,9 10.5,3" stroke="#0f0f0f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="check-text"><div class="check-main">Flügelbolzen &amp; L'Hotellierverschlüsse <span class="check-keyword">GESICHERT</span></div></div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"><svg class="check-tick" viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 4.5,9 10.5,3" stroke="#0f0f0f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="check-text"><div class="check-main">Höhenleitwerk <span class="check-keyword">GESICHERT</span></div></div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"><svg class="check-tick" viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 4.5,9 10.5,3" stroke="#0f0f0f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="check-text"><div class="check-main">TEK &amp; Pitot Sonden <span class="check-keyword">MONTIERT</span></div></div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"><svg class="check-tick" viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 4.5,9 10.5,3" stroke="#0f0f0f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="check-text"><div class="check-main">Reißleine Fallschirm <span class="check-keyword">EINGEKLINKT</span></div></div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"><svg class="check-tick" viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 4.5,9 10.5,3" stroke="#0f0f0f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="check-text"><div class="check-main">Flügeltank <span class="check-keyword">ANGESCHLOSSEN</span></div></div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"><svg class="check-tick" viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 4.5,9 10.5,3" stroke="#0f0f0f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="check-text"><div class="check-main">Haube <span class="check-keyword">VERRIEGELT</span></div></div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"><svg class="check-tick" viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 4.5,9 10.5,3" stroke="#0f0f0f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="check-text"><div class="check-main">Bremsklappe <span class="check-keyword">VERRIEGELT</span></div></div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"><svg class="check-tick" viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 4.5,9 10.5,3" stroke="#0f0f0f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="check-text"><div class="check-main">Logger <span class="check-keyword">EIN</span></div></div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"><svg class="check-tick" viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 4.5,9 10.5,3" stroke="#0f0f0f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="check-text"><div class="check-main">Flarmantenne <span class="check-keyword">MONTIERT</span></div></div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"><svg class="check-tick" viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 4.5,9 10.5,3" stroke="#0f0f0f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="check-text"><div class="check-main">Kuller <span class="check-keyword">ENTFERNT</span></div></div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"><svg class="check-tick" viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 4.5,9 10.5,3" stroke="#0f0f0f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="check-text"><div class="check-main">Frequenzen <span class="check-keyword">VORBEREITET</span></div></div>
+      </div>
+    </div>
+
+    <div class="checklist-footer">
+      <div class="check-progress" id="check-progress"><span id="check-done">0</span> / 12 erledigt</div>
+      <button class="reset-btn" onclick="resetChecklist()">↺ Zurücksetzen</button>
+    </div>
+
+    <div class="all-clear" id="all-clear">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#c8f04a" stroke-width="1.5"/><polyline points="4.5,8 7,10.5 11.5,5.5" stroke="#c8f04a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Bereit zum Start
+    </div>
+  </div><!-- /tab-checklist -->
+
+  <!-- Takeoff Tab -->
+  <div class="tab-panel" id="tab-takeoff">
+    <div class="card">
+      <div class="card-label">Bedingungen</div>
+      <div class="input-row">
+        <div>
+          <div class="input-label">Außentemperatur</div>
+        </div>
+        <div class="input-right">
+          <input type="number" id="to-temp" value="15" min="-30" max="50" step="1" oninput="updateTakeoff()">
+          <span class="unit">°C</span>
+        </div>
+      </div>
+      <div class="input-row">
+        <div>
+          <div class="input-label">Platzhöhe (Druckhöhe)</div>
+        </div>
+        <div class="input-right">
+          <input type="number" id="to-alt" value="0" min="0" max="3000" step="50" oninput="updateTakeoff()">
+          <span class="unit">m</span>
+        </div>
+      </div>
+      <div class="input-row" style="border-bottom:none; flex-direction:column; align-items:stretch; gap:10px; padding-top:4px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div class="input-label">Pistenzustand</div>
+          </div>
+        </div>
+        <div class="surface-selector" id="surface-selector">
+          <button class="surface-btn active" onclick="setSurface('hard')" id="surf-hard">Hartbelag</button>
+          <button class="surface-btn" onclick="setSurface('dry-grass')" id="surf-dry">Trockengras +20%</button>
+          <button class="surface-btn" onclick="setSurface('wet-grass')" id="surf-wet">Nassgras +40%</button>
+        </div>
+      </div>
+      <div class="input-row" style="border-bottom:none; flex-direction:column; align-items:stretch; gap:10px; padding-top:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div class="input-label" id="wind-label">Windstill</div>
+            <div class="input-hint" id="wind-hint">kein Einfluss</div>
+          </div>
+          <div style="display:flex; align-items:baseline; gap:4px;">
+            <span class="metric-value" id="wind-display" style="font-size:18px;">0</span>
+            <span class="unit">km/h</span>
+          </div>
+        </div>
+        <input type="range" id="to-wind" min="-5" max="15" step="1" value="0"
+               style="width:100%; accent-color:var(--accent);"
+               oninput="updateTakeoff()">
+        <div style="display:flex; justify-content:space-between; font-family:var(--mono); font-size:10px; color:var(--muted); margin-top:-6px;">
+          <span style="color:var(--danger);">−5 ↙</span><span>0</span><span>5</span><span>10</span><span>↗ 15 km/h</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-family:var(--mono); font-size:10px; color:var(--muted); margin-top:-8px;">
+          <span style="color:var(--danger);">Rücken</span><span style="color:var(--accent);">Gegen</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="to-result-card">
+      <div class="card-label">Ergebnis — MTOW 820 kg, ICAO ISA</div>
+      <div class="result-grid" style="margin-bottom:1rem;">
+        <div class="metric">
+          <div class="metric-label">Rollstrecke</div>
+          <div><span class="metric-value" id="to-roll">241</span><span class="metric-unit">m</span></div>
+          <div id="to-roll-base-row" style="display:none; margin-top:4px; font-family:var(--mono); font-size:10px; color:var(--muted);">ohne Wind: <span id="to-roll-base">241</span> m</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Startstrecke (15m)</div>
+          <div><span class="metric-value" id="to-total">398</span><span class="metric-unit">m</span></div>
+          <div id="to-total-base-row" style="display:none; margin-top:4px; font-family:var(--mono); font-size:10px; color:var(--muted);">ohne Wind: <span id="to-total-base">398</span> m</div>
+        </div>
+      </div>
+      <div class="metric" style="margin-bottom:0.75rem;">
+        <div class="metric-label">Abhebegeschwindigkeit (GS)</div>
+        <div><span class="metric-value" id="to-liftoff-gs">~85</span><span class="metric-unit">km/h</span>
+        <span style="font-family:var(--mono);font-size:11px;color:var(--muted);"> GS · IAS immer ~85 km/h</span></div>
+      </div>
+      <div class="to-note" id="grass-note" style="display:none;">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="flex-shrink:0;margin-top:1px;"><circle cx="6.5" cy="6.5" r="6" stroke="#ffb347" stroke-width="1.2"/><path d="M6.5 4v3.5" stroke="#ffb347" stroke-width="1.4" stroke-linecap="round"/><circle cx="6.5" cy="9.5" r="0.7" fill="#ffb347"/></svg>
+        Graspiste: Rollstrecke +20% bereits eingerechnet. Feuchter/weicher Boden verlängert die Strecke beträchtlich.
+      </div>
+      <div class="to-note" id="extrap-note" style="display:none;">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="flex-shrink:0;margin-top:1px;"><circle cx="6.5" cy="6.5" r="6" stroke="#ffb347" stroke-width="1.2"/><path d="M6.5 4v3.5" stroke="#ffb347" stroke-width="1.4" stroke-linecap="round"/><circle cx="6.5" cy="9.5" r="0.7" fill="#ffb347"/></svg>
+        Werte ausserhalb des Handbuchbereichs — extrapoliert, mit Vorsicht verwenden.
+      </div>
+    </div>
+  </div><!-- /tab-takeoff -->
+
+  <!-- Flights Tab -->
+  <div class="tab-panel" id="tab-flights">
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+        <div class="card-label" style="margin-bottom:0;">Letzte Flüge · D-KBJL</div>
+        <a href="https://weglide.org/aircraft/search?registration=D-KBJL" target="_blank"
+           style="font-family:var(--mono);font-size:10px;color:var(--accent);text-decoration:none;letter-spacing:0.06em;">
+          WeGlide ↗
+        </a>
+      </div>
+      <div id="flights-list">
+        <div class="flights-loading" id="flights-loading">
+          <div class="flights-spinner"></div>
+          <span>Lade Flüge…</span>
+        </div>
+      </div>
+    </div>
+  </div><!-- /tab-flights -->
+
+  <footer>Nimbus 4DM · MTOW 820 kg · Fläche 17.96 m² · Version 2024</footer>
+
+</div>
+
+<script>
+// ── Aircraft constants from weighing report / flight manual ──────────────────
+const AC = {
+  emptyWeight:    615.6,
+  emptyCG:        498.6184211,  // mm from datum (main wheel)
+  wingArea:       17.96,        // m²
+
+  // Moment arms [mm from datum = main wheel]
+  arms: {
+    avionicBatt:  -743.0,
+    trimCockpit:  -1916.0,
+    pilotFront:   -1463.0,
+    chuteFront:   -1463.0,
+    copilotRear:  -353.0,
+    chuteRear:    -353.0,
+    wingWater:     43.0,
+    fuelTankWing:  145.0,
+    fuelTankBody:  380.0,
+    trimNose:     -1916.0,   // Trimmgewicht Cockpit arm
+    tailWater:     5270.0,
+    tailBatt:      5270.0,
+  },
+
+  // Fixed items always present (not in empty weight or already included)
+  fixedItems: [
+    { name: 'Avionik Batterie', mass: 1.3, arm: -743.0 },
+  ],
+
+  // CG envelope limits [mm from datum]
+  cgFwd:  105.0,
+  cgAft:  250.0,
+
+  // % MAC calculation: CG_pct = (CG_mm - cgFwd) / (cgAft - cgFwd) * 100
+  // Using the envelope range as 0–100%
+};
+
+const TRIM_WEIGHT_KG = 3.9;
+const FUEL_DENSITY   = 0.76; // kg/l
+
+// ── Calculation ──────────────────────────────────────────────────────────────
+function calculate() {
+  const pilot       = parseFloat(document.getElementById('pilot').value)       || 0;
+  const copilot     = parseFloat(document.getElementById('copilot').value)     || 0;
+  const chuteFront  = parseFloat(document.getElementById('chute_front').value) || 0;
+  const chuteRear   = parseFloat(document.getElementById('chute_rear').value)  || 0;
+  const trimCount   = parseFloat(document.getElementById('trim_weights').value)|| 0;
+  const tailWaterL  = parseFloat(document.getElementById('tail_water').value)  || 0;
+  const fuelL       = parseFloat(document.getElementById('fuel').value)        || 0;
+  const wingWaterL  = parseFloat(document.getElementById('wing_water').value)  || 0;
+
+  // Convert inputs to masses
+  const trimMass     = trimCount * TRIM_WEIGHT_KG;
+  const tailWaterKg  = tailWaterL * 1.0;   // water density 1 kg/l
+  const fuelKg       = fuelL * FUEL_DENSITY;
+  const wingWaterKg  = wingWaterL * 1.0;
+
+  // Moment of empty aircraft
+  const emptyMoment = AC.emptyWeight * AC.emptyCG;
+
+  // Build load items
+  const loads = [
+    { name: 'Leergewicht',             mass: AC.emptyWeight, arm: AC.emptyCG },
+    { name: 'Avionik Batterie',        mass: 1.3,            arm: AC.arms.avionicBatt },
+    { name: 'Pilot (vorne)',           mass: pilot,          arm: AC.arms.pilotFront },
+    { name: 'Fallschirm vorne',        mass: chuteFront,     arm: AC.arms.chuteFront },
+    { name: 'Kopilot (hinten)',        mass: copilot,        arm: AC.arms.copilotRear },
+    { name: 'Fallschirm hinten',       mass: chuteRear,      arm: AC.arms.chuteRear },
+    { name: 'Trimmgewichte Nase',      mass: trimMass,       arm: AC.arms.trimNose },
+    { name: 'Heckwasser',              mass: tailWaterKg,    arm: AC.arms.tailWater },
+    { name: 'Kraftstoff',              mass: fuelKg,         arm: AC.arms.fuelTankBody },
+    { name: 'Wasserballast Flügel',    mass: wingWaterKg,    arm: AC.arms.wingWater },
+  ].filter(item => item.mass !== 0 || item.name === 'Leergewicht');
+
+  // Sum masses and moments
+  let totalMass   = 0;
+  let totalMoment = 0;
+  loads.forEach(item => {
+    item.moment = item.mass * item.arm;
+    totalMass   += item.mass;
+    totalMoment += item.moment;
+  });
+
+  const cgMm  = totalMoment / totalMass;
+  const range = AC.cgAft - AC.cgFwd;
+  const cgPct = ((cgMm - AC.cgFwd) / range) * 100;
+  const wingLoad = totalMass / AC.wingArea;
+
+  return { loads, totalMass, totalMoment, cgMm, cgPct, wingLoad };
+}
+
+// ── UI update ────────────────────────────────────────────────────────────────
+function update() {
+  const r = calculate();
+
+  document.getElementById('out-weight').textContent   = r.totalMass.toFixed(1);
+  document.getElementById('out-wingload').textContent = r.wingLoad.toFixed(1);
+  document.getElementById('out-cg-mm').textContent    = r.cgMm.toFixed(1);
+  document.getElementById('out-cg-pct').textContent   = r.cgPct.toFixed(1);
+  document.getElementById('cg-pos-label').textContent = r.cgMm.toFixed(1) + ' mm';
+
+  // Bar: map cgMm into 0–100% of bar where fwd=0%, aft=100%
+  // Add some padding on each side
+  const PAD  = 0.10; // 10% padding each side
+  const pct  = (r.cgMm - AC.cgFwd) / (AC.cgAft - AC.cgFwd);
+  const barL = (PAD + pct * (1 - 2 * PAD)) * 100;
+  const marker = document.getElementById('bar-marker');
+  marker.style.left = Math.max(2, Math.min(98, barL)) + '%';
+
+  // Optimal zone: 70–80% of envelope range, target at 75%
+  const optFwdPct  = 0.70;
+  const optAftPct  = 0.80;
+  const targetPct  = 0.75;
+  const optFwdBar  = (PAD + optFwdPct  * (1 - 2 * PAD)) * 100;
+  const optAftBar  = (PAD + optAftPct  * (1 - 2 * PAD)) * 100;
+  const targetBar  = (PAD + targetPct  * (1 - 2 * PAD)) * 100;
+
+  const optZone = document.getElementById('bar-optimal');
+  optZone.style.left  = optFwdBar + '%';
+  optZone.style.width = (optAftBar - optFwdBar) + '%';
+
+  const targetEl = document.getElementById('bar-target');
+  targetEl.style.left = targetBar + '%';
+
+  // Status
+  const pill = document.getElementById('status-pill');
+  const statusText = document.getElementById('status-text');
+  const isOk      = r.cgMm >= AC.cgFwd && r.cgMm <= AC.cgAft;
+  const isNear    = isOk && (Math.abs(r.cgMm - AC.cgFwd) < 15 || Math.abs(r.cgMm - AC.cgAft) < 15);
+  const overMax   = r.totalMass > 820;
+  const optFwdMm  = AC.cgFwd + 0.70 * (AC.cgAft - AC.cgFwd);
+  const optAftMm  = AC.cgFwd + 0.80 * (AC.cgAft - AC.cgFwd);
+  const isOptimal = r.cgMm >= optFwdMm && r.cgMm <= optAftMm;
+
+  marker.className = 'bar-marker' + (isOk ? '' : ' out');
+
+  if (overMax) {
+    pill.className = 'status-pill status-danger';
+    statusText.textContent = 'MTOW überschritten';
+  } else if (!isOk) {
+    pill.className = 'status-pill status-danger';
+    statusText.textContent = r.cgMm < AC.cgFwd ? 'Zu weit vorne' : 'Zu weit hinten';
+  } else if (isNear) {
+    pill.className = 'status-pill status-warn';
+    statusText.textContent = 'Nahe am Limit';
+  } else if (isOptimal) {
+    pill.className = 'status-pill status-ok';
+    statusText.textContent = 'Optimal';
+  } else {
+    pill.className = 'status-pill status-ok';
+    statusText.textContent = 'Im Bereich';
+  }
+
+  // Moment table
+  const tbody = document.getElementById('moment-body');
+  let rows = '';
+  r.loads.forEach(item => {
+    rows += `<tr>
+      <td>${item.name}</td>
+      <td>${item.mass.toFixed(1)}</td>
+      <td>${item.arm.toFixed(0)}</td>
+      <td>${item.moment.toFixed(0)}</td>
+    </tr>`;
+  });
+  rows += `<tr>
+    <td>Gesamt</td>
+    <td>${r.totalMass.toFixed(1)}</td>
+    <td>${r.cgMm.toFixed(1)}</td>
+    <td>${r.totalMoment.toFixed(0)}</td>
+  </tr>`;
+  tbody.innerHTML = rows;
+}
+
+function toggleDetail() {
+  const t = document.getElementById('detail-table');
+  const b = document.querySelector('.detail-toggle');
+  t.classList.toggle('open');
+  b.textContent = t.classList.contains('open')
+    ? '▾ Momentenaufstellung verbergen'
+    : '▸ Momentenaufstellung anzeigen';
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if (tab === 'flights') loadFlights();
+}
+
+function toggleCheck(el) {
+  el.classList.toggle('done');
+  updateCheckProgress();
+}
+
+function updateCheckProgress() {
+  const total = document.querySelectorAll('.check-item').length;
+  const done  = document.querySelectorAll('.check-item.done').length;
+  document.getElementById('check-done').textContent = done;
+  const allClear = document.getElementById('all-clear');
+  allClear.classList.toggle('show', done === total);
+}
+
+function resetChecklist() {
+  document.querySelectorAll('.check-item').forEach(el => el.classList.remove('done'));
+  updateCheckProgress();
+}
+
+// ── Takeoff performance data (from Nimbus 4DM flight manual section 5.2.3) ───
+// All values for MTOW 820 kg, ICAO standard atmosphere, hard runway
+// Rows: pressure altitude [m], Cols: OAT [°C]
+const TO_ALTS  = [0, 500, 1000, 1500, 2000];
+const TO_TEMPS = [-15, 0, 15, 30];
+
+const TO_ROLL = [
+  [179, 209, 241, 276],
+  [211, 246, 283, 324],
+  [249, 289, 334, 382],
+  [294, 342, 394, 450],
+  [348, 404, 465, 531],
+];
+
+const TO_TOTAL = [
+  [296, 345, 398, 456],
+  [349, 406, 469, 537],
+  [412, 479, 552, 632],
+  [486, 565, 651, 745],
+  [575, 668, 769, 879],
+];
+
+let surfaceMode = 'hard'; // 'hard' | 'dry-grass' | 'wet-grass'
+
+function setSurface(mode) {
+  surfaceMode = mode;
+  document.querySelectorAll('.surface-btn').forEach(b => {
+    b.classList.remove('active', 'warn', 'danger');
+  });
+  const btn = document.getElementById('surf-' + (mode === 'hard' ? 'hard' : mode === 'dry-grass' ? 'dry' : 'wet'));
+  btn.classList.add('active');
+  if (mode === 'dry-grass') btn.classList.add('warn');
+  if (mode === 'wet-grass') btn.classList.add('danger');
+  updateTakeoff();
+}
+
+function updateTakeoff() {
+  const temp = parseFloat(document.getElementById('to-temp').value) || 15;
+  const alt  = parseFloat(document.getElementById('to-alt').value)  || 0;
+  const wind = parseFloat(document.getElementById('to-wind').value) || 0;
+
+  // Wind label and hint
+  const windLabel = document.getElementById('wind-label');
+  const windHint  = document.getElementById('wind-hint');
+  const windDisp  = document.getElementById('wind-display');
+  windDisp.textContent = Math.abs(Math.round(wind));
+  if (wind > 0) {
+    windDisp.style.color = 'var(--accent)';
+    windLabel.textContent = 'Gegenwind';
+    windHint.textContent  = 'frühere Abhebung, besserer Steigwinkel';
+  } else if (wind < 0) {
+    windDisp.style.color = 'var(--danger)';
+    windLabel.textContent = 'Rückenwind';
+    windHint.textContent  = 'längere Rollstrecke, flacherer Steigwinkel';
+  } else {
+    windDisp.style.color = 'var(--muted)';
+    windLabel.textContent = 'Windstill';
+    windHint.textContent  = 'kein Einfluss';
+  }
+
+  const V_LO  = 85;
+  const V_OBS = 95;
+
+  // Base distances from table (hard runway, no wind)
+  let rollBase  = bilinear(TO_ROLL,  TO_ALTS, TO_TEMPS, alt, temp);
+  let totalBase = bilinear(TO_TOTAL, TO_ALTS, TO_TEMPS, alt, temp);
+
+  // Surface penalty applied before wind correction
+  const grassPenalty = surfaceMode === 'wet-grass' ? 1.40 : surfaceMode === 'dry-grass' ? 1.20 : 1.00;
+  if (grassPenalty > 1) {
+    const climbBase = totalBase - rollBase;
+    rollBase  = rollBase * grassPenalty;
+    totalBase = rollBase + climbBase;
+  }
+
+  // Wind correction (positive = headwind, negative = tailwind)
+  // Ground roll: kinetic energy scales with v² → roll ∝ ((V_LO - wind) / V_LO)²
+  const rollWind  = rollBase  * Math.pow((V_LO  - wind) / V_LO,  2);
+  // Climb phase: ground covered scales linearly with groundspeed
+  const climbWind = (totalBase - rollBase) * ((V_OBS - wind) / V_OBS);
+  const totalWind = rollWind + climbWind;
+
+  const hasWind   = wind !== 0;
+  const isExtrap  = temp < -15 || temp > 30 || alt < 0 || alt > 2000;
+  const liftoffGS = Math.round(V_LO - wind);
+
+  document.getElementById('to-roll').textContent  = Math.round(hasWind ? rollWind  : rollBase);
+  document.getElementById('to-total').textContent = Math.round(hasWind ? totalWind : totalBase);
+  document.getElementById('to-liftoff-gs').textContent = hasWind ? '~' + liftoffGS : '~85';
+
+  document.getElementById('to-roll-base-row').style.display  = hasWind ? 'block' : 'none';
+  document.getElementById('to-total-base-row').style.display = hasWind ? 'block' : 'none';
+  document.getElementById('to-roll-base').textContent  = Math.round(rollBase);
+  document.getElementById('to-total-base').textContent = Math.round(totalBase);
+
+  // Grass note text varies by surface
+  const grassNote = document.getElementById('grass-note');
+  if (surfaceMode === 'dry-grass') {
+    grassNote.style.display = 'flex';
+    grassNote.lastChild.textContent = 'Trockengras: +20% Rollstrecke eingerechnet. Bei feuchtem oder weichem Boden beträchtlich mehr.';
+  } else if (surfaceMode === 'wet-grass') {
+    grassNote.style.display = 'flex';
+    grassNote.lastChild.textContent = 'Nassgras: +40% Rollstrecke eingerechnet. Weicher Boden kann die Strecke weiter verlängern.';
+  } else {
+    grassNote.style.display = 'none';
+  }
+
+  document.getElementById('extrap-note').style.display = isExtrap ? 'flex' : 'none';
+}
+
+function bilinear(table, alts, temps, alt, temp) {
+  // Find bounding indices (allow extrapolation by clamping to edge)
+  let ai = 0;
+  for (let i = 0; i < alts.length - 1; i++) {
+    if (alt >= alts[i]) ai = i;
+  }
+  let ti = 0;
+  for (let i = 0; i < temps.length - 1; i++) {
+    if (temp >= temps[i]) ti = i;
+  }
+
+  const a0 = alts[ai],  a1 = alts[Math.min(ai+1, alts.length-1)];
+  const t0 = temps[ti], t1 = temps[Math.min(ti+1, temps.length-1)];
+
+  const fa = a0 === a1 ? 0 : (alt  - a0) / (a1 - a0);
+  const ft = t0 === t1 ? 0 : (temp - t0) / (t1 - t0);
+
+  const v00 = table[ai][ti];
+  const v10 = table[Math.min(ai+1, alts.length-1)][ti];
+  const v01 = table[ai][Math.min(ti+1, temps.length-1)];
+  const v11 = table[Math.min(ai+1, alts.length-1)][Math.min(ti+1, temps.length-1)];
+
+  return v00 * (1-fa) * (1-ft)
+       + v10 * fa     * (1-ft)
+       + v01 * (1-fa) * ft
+       + v11 * fa     * ft;
+}
+
+// ── WeGlide flight history ────────────────────────────────────────────────────
+const WEGLIDE_REG  = 'D-KBJL';
+const WEGLIDE_BASE = 'https://api.weglide.org';
+let flightsLoaded  = false;
+
+async function tryFetch(finalUrl, parseAs) {
+  const timeout = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error('Timeout')), 10000)
+  );
+  const request = fetch(finalUrl).then(async res => {
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await res.text();
+    if (parseAs === 'allorigins') {
+      return JSON.parse(JSON.parse(text).contents);
+    }
+    return JSON.parse(text);
+  });
+  return Promise.race([request, timeout]);
+}
+
+async function fetchFlights() {
+  const apiUrl = `${WEGLIDE_BASE}/v1/flight?registration_in=${WEGLIDE_REG}&limit=15&order_by=-scoring_date&include_stats=false`;
+
+  // 1. Try direct
+  try {
+    const data = await tryFetch(apiUrl, 'json');
+    console.log('WeGlide: direct fetch succeeded');
+    return data;
+  } catch(e) {
+    console.warn('WeGlide: direct failed (' + e.message + ')');
+  }
+
+  // 2. Try allorigins proxy
+  try {
+    const url = `https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`;
+    const data = await tryFetch(url, 'allorigins');
+    console.log('WeGlide: allorigins proxy succeeded');
+    return data;
+  } catch(e) {
+    console.warn('WeGlide: allorigins failed (' + e.message + ')');
+  }
+
+  // 3. Try corsproxy.io
+  try {
+    const url = `https://corsproxy.io/?${encodeURIComponent(apiUrl)}`;
+    const data = await tryFetch(url, 'json');
+    console.log('WeGlide: corsproxy succeeded');
+    return data;
+  } catch(e) {
+    console.warn('WeGlide: corsproxy failed (' + e.message + ')');
+  }
+
+  throw new Error('Alle Verbindungsversuche fehlgeschlagen');
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('de-DE', { day: '2-digit', month: 'short', year: '2-digit' });
+}
+
+function formatTime(dtStr) {
+  if (!dtStr) return '—:—';
+  const d = new Date(dtStr);
+  return String(d.getUTCHours()).padStart(2, '0') + ':'
+       + String(d.getUTCMinutes()).padStart(2, '0');
+}
+
+function formatDuration(takeoff, landing) {
+  if (!takeoff || !landing) return '';
+  const mins = Math.round((new Date(landing) - new Date(takeoff)) / 60000);
+  if (mins <= 0) return '';
+  const h = Math.floor(mins / 60);
+  const m = String(mins % 60).padStart(2, '0');
+  return `${h}:${m}`;
+}
+
+function renderFlights(flights) {
+  const list = document.getElementById('flights-list');
+  if (!flights || flights.length === 0) {
+    list.innerHTML = '<div class="flights-empty">Keine Flüge gefunden.</div>';
+    return;
+  }
+  list.innerHTML = flights.map(f => {
+    const date     = formatDate(f.scoring_date);
+    const airport  = f.custom_takeoff_airport?.name || '—';
+    const takeoff  = formatTime(f.takeoff_time);
+    const landing  = formatTime(f.landing_time);
+    const dur      = formatDuration(f.takeoff_time, f.landing_time);
+    const pilot    = f.user?.name || '';
+    const copilot  = f.co_user?.name || f.co_user_name || '';
+    const crew     = copilot ? `${pilot} · ${copilot}` : pilot;
+    const contest  = Array.isArray(f.contest) ? f.contest[0] : f.contest;
+    const distKm   = contest?.distance ? Math.round(contest.distance) : null;
+    const distStr  = distKm ? `${distKm} km` : '';
+    const flightUrl = `https://weglide.org/flight/${f.id}`;
+    return `<a class="flight-row" href="${flightUrl}" target="_blank">
+      <div class="flight-row-top">
+        <span class="flight-date">${date}</span>
+        <span class="flight-airport">${airport}</span>
+        ${distStr ? `<span class="flight-dist">${distStr}</span>` : ''}
+      </div>
+      <div class="flight-row-times">
+        <div class="flight-time-block">
+          <div class="flight-time-label">Start</div>
+          <div class="flight-time-value">${takeoff}</div>
+        </div>
+        <div class="flight-time-sep">→</div>
+        <div class="flight-time-block">
+          <div class="flight-time-label">Landung</div>
+          <div class="flight-time-value">${landing}</div>
+        </div>
+        ${dur ? `<div class="flight-dur-block">
+          <div class="flight-time-label">Dauer</div>
+          <div class="flight-dur-value">${dur}</div>
+        </div>` : ''}
+      </div>
+      <div class="flight-row-bottom">
+        <span class="flight-pilot">${crew}</span>
+        <span class="flight-arrow">WeGlide ↗</span>
+      </div>
+    </a>`;
+  }).join('');
+
+  // UTC note
+  list.insertAdjacentHTML('beforeend',
+    '<div style="font-family:var(--mono);font-size:10px;color:var(--muted);text-align:center;padding-top:12px;border-top:1px solid var(--border);margin-top:4px;">Zeiten in UTC</div>'
+  );
+}
+
+async function loadFlights() {
+  if (flightsLoaded) return;
+  const list = document.getElementById('flights-list');
+  list.innerHTML = '<div class="flights-loading"><div class="flights-spinner"></div><span>Lade Flüge…</span></div>';
+  try {
+    const data = await fetchFlights();
+    const flights = Array.isArray(data) ? data : (data.items || data.flights || []);
+    renderFlights(flights);
+    flightsLoaded = true;
+  } catch (err) {
+    console.error('WeGlide: all fetches failed:', err);
+    list.innerHTML = `<div class="flights-error">
+      Verbindung zu WeGlide fehlgeschlagen.<br>
+      <span style="color:var(--muted);">${err.message}</span><br><br>
+      <a href="https://weglide.org/aircraft/search?registration=${WEGLIDE_REG}"
+         target="_blank" style="color:var(--accent);">Auf WeGlide öffnen ↗</a>
+    </div>`;
+  }
+}
+
+// init takeoff
+updateTakeoff();
+document.querySelectorAll('input').forEach(el => {
+  el.addEventListener('input', function() {
+    if (el.id === 'to-temp' || el.id === 'to-alt') updateTakeoff();
+    else update();
+  });
+  el.addEventListener('focus', function() {
+    const inp = this;
+    setTimeout(() => inp.select(), 0);
+  });
+});
+
+// Initial render
+update();
+</script>
+</body>
+</html>
